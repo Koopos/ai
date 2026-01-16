@@ -61,11 +61,24 @@ export const categories = [
         color: '#9ae6b4',
     },
     {
+        id: 'salary',
+        name: '工资',
+        icon: 'cash-outline',
+        color: '#48bb78',
+    },
+    {
+        id: 'bonus',
+        name: '奖金',
+        icon: 'gift-outline',
+        color: '#38a169',
+    },
+    {
         id: 'other',
         name: '其他',
         icon: 'ellipsis-horizontal-outline',
         color: '#a0aec0',
     },
+
 ];
 
 export const getCategoryById = (id) => {

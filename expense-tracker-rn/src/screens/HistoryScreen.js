@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -9,48 +9,49 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
-import { getExpenses, deleteExpense } from '../services/storage';
+import { useExpenses } from '../context/ExpenseContext';
 import { formatAmount, formatDate, groupByDate } from '../utils/helpers';
 import ExpenseItem from '../components/ExpenseItem';
 
-const HistoryScreen = () => {
+const HistoryScreen = ({ navigation }) => {
+    const { expenses, deleteExpense, refreshExpenses } = useExpenses();
     const [sections, setSections] = useState([]);
     const [refreshing, setRefreshing] = useState(false);
 
-    const loadData = async () => {
-        const expenses = await getExpenses();
+    useEffect(() => {
         const grouped = groupByDate(expenses);
         const sectionData = grouped.map((group) => ({
             title: formatDate(group.date),
-            total: group.total,
+            netBalance: group.netBalance,
             data: group.items,
         }));
         setSections(sectionData);
-    };
+    }, [expenses]);
 
-    useFocusEffect(
-        useCallback(() => {
-            loadData();
-        }, [])
-    );
 
     const onRefresh = async () => {
         setRefreshing(true);
-        await loadData();
+        await refreshExpenses();
         setRefreshing(false);
     };
 
     const handleDelete = async (id) => {
         await deleteExpense(id);
-        loadData();
     };
 
-    const renderSectionHeader = ({ section }) => (
-        <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <Text style={styles.sectionTotal}>-{formatAmount(section.total)}</Text>
-        </View>
-    );
+
+    const renderSectionHeader = ({ section }) => {
+        const isPositive = section.netBalance >= 0;
+        return (
+            <View style={styles.sectionHeader}>
+                <Text style={styles.sectionTitle}>{section.title}</Text>
+                <Text style={[styles.sectionTotal, isPositive && styles.sectionTotalPositive]}>
+                    {isPositive ? '+' : '-'}{formatAmount(Math.abs(section.netBalance))}
+                </Text>
+            </View>
+        );
+    };
+
 
     const renderEmpty = () => (
         <View style={styles.empty}>
@@ -113,6 +114,10 @@ const styles = StyleSheet.create({
         fontSize: 14,
         fontWeight: '600',
     },
+    sectionTotalPositive: {
+        color: colors.success,
+    },
+
     empty: {
         alignItems: 'center',
         paddingTop: 100,

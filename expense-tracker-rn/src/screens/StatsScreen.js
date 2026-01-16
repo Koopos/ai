@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -11,9 +11,11 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
-import { getStats } from '../services/storage';
+import { useExpenses } from '../context/ExpenseContext';
 import MonthYearPicker from '../components/MonthYearPicker';
 import { getCategoryById, categories } from '../constants/categories';
+import * as Haptics from 'expo-haptics';
+
 import {
     formatAmount,
     getMonthStart,
@@ -25,39 +27,40 @@ import {
 const { width } = Dimensions.get('window');
 
 const StatsScreen = () => {
-    const [stats, setStats] = useState({ total: 0, byCategory: {}, count: 0 });
+    const { expenses, getStats: getStatsFromContext, refreshExpenses } = useExpenses();
+    const [stats, setStats] = useState({ total: 0, income: 0, expense: 0, byExpense: {}, byIncome: {}, count: 0 });
     const [viewType, setViewType] = useState('month'); // 'month' | 'year'
+    const [subViewType, setSubViewType] = useState('expense'); // 'expense' | 'income'
     const [selectedDate, setSelectedDate] = useState(new Date());
     const [showPicker, setShowPicker] = useState(false);
+
     const [refreshing, setRefreshing] = useState(false);
 
-    const loadData = async () => {
+    useEffect(() => {
         const start = viewType === 'month' ? getMonthStart(selectedDate) : getYearStart(selectedDate);
         const end = viewType === 'month' ? getMonthEnd(selectedDate) : getYearEnd(selectedDate);
-        const data = await getStats(start, end);
+        const data = getStatsFromContext(start, end);
         setStats(data);
-    };
-
-    useFocusEffect(
-        useCallback(() => {
-            loadData();
-        }, [viewType, selectedDate])
-    );
+    }, [expenses, viewType, selectedDate, getStatsFromContext]);
 
     const onRefresh = async () => {
         setRefreshing(true);
-        await loadData();
+        await refreshExpenses();
         setRefreshing(false);
     };
 
     // 获取排序后的分类统计
-    const sortedCategories = Object.entries(stats.byCategory)
+    const currentData = subViewType === 'expense' ? stats.byExpense : stats.byIncome;
+    const currentTotal = subViewType === 'expense' ? stats.expense : stats.income;
+
+    const sortedCategories = Object.entries(currentData || {})
         .map(([id, amount]) => ({
             ...getCategoryById(id),
             amount,
-            percentage: stats.total > 0 ? (amount / stats.total) * 100 : 0,
+            percentage: currentTotal > 0 ? (amount / currentTotal) * 100 : 0,
         }))
         .sort((a, b) => b.amount - a.amount);
+
 
     return (
         <ScrollView
@@ -78,6 +81,7 @@ const StatsScreen = () => {
                     onPress={() => {
                         setViewType('month');
                         setSelectedDate(new Date());
+                        Haptics.selectionAsync();
                     }}
                 >
                     <Text style={[styles.toggleText, viewType === 'month' && styles.toggleTextActive]}>
@@ -89,6 +93,7 @@ const StatsScreen = () => {
                     onPress={() => {
                         setViewType('year');
                         setSelectedDate(new Date());
+                        Haptics.selectionAsync();
                     }}
                 >
                     <Text style={[styles.toggleText, viewType === 'year' && styles.toggleTextActive]}>
@@ -96,6 +101,33 @@ const StatsScreen = () => {
                     </Text>
                 </TouchableOpacity>
             </View>
+
+            {/* 收支切换 */}
+            <View style={styles.subToggleContainer}>
+                <TouchableOpacity
+                    style={[styles.subToggleButton, subViewType === 'expense' && styles.subToggleButtonActiveExpense]}
+                    onPress={() => {
+                        setSubViewType('expense');
+                        Haptics.selectionAsync();
+                    }}
+                >
+                    <Text style={[styles.subToggleText, subViewType === 'expense' && styles.subToggleTextActive]}>
+                        支出
+                    </Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                    style={[styles.subToggleButton, subViewType === 'income' && styles.subToggleButtonActiveIncome]}
+                    onPress={() => {
+                        setSubViewType('income');
+                        Haptics.selectionAsync();
+                    }}
+                >
+                    <Text style={[styles.subToggleText, subViewType === 'income' && styles.subToggleTextActive]}>
+                        收入
+                    </Text>
+                </TouchableOpacity>
+            </View>
+
 
             {/* 总览卡片 */}
             <TouchableOpacity
@@ -113,11 +145,17 @@ const StatsScreen = () => {
                     <Ionicons name="chevron-down" size={14} color={colors.primary} style={{ marginLeft: 4 }} />
                 </View>
                 <Text style={styles.summaryLabel}>
-                    {viewType === 'month' ? '月度总支出' : '年度总支出'}
+                    {viewType === 'month'
+                        ? (subViewType === 'expense' ? '月度总支出' : '月度总收入')
+                        : (subViewType === 'expense' ? '年度总支出' : '年度总收入')
+                    }
                 </Text>
-                <Text style={styles.summaryAmount}>{formatAmount(stats.total)}</Text>
-                <Text style={styles.summaryCount}>共 {stats.count} 笔支出</Text>
+                <Text style={[styles.summaryAmount, subViewType === 'income' && { color: colors.success }]}>
+                    {formatAmount(subViewType === 'expense' ? stats.expense : stats.income)}
+                </Text>
+                <Text style={styles.summaryCount}>共 {stats.count} 笔记录</Text>
             </TouchableOpacity>
+
 
             <MonthYearPicker
                 visible={showPicker}
@@ -147,14 +185,25 @@ const StatsScreen = () => {
                                     <Ionicons name={cat.icon} size={20} color={cat.color} />
                                 </View>
                                 <View style={styles.categoryInfo}>
-                                    <Text style={styles.categoryName}>{cat.name}</Text>
-                                    <Text style={styles.categoryPercentage}>
-                                        {cat.percentage.toFixed(1)}%
-                                    </Text>
+                                    <View style={styles.categoryNameRow}>
+                                        <Text style={styles.categoryName}>{cat.name}</Text>
+                                        <Text style={styles.categoryPercentage}>
+                                            {cat.percentage.toFixed(1)}%
+                                        </Text>
+                                    </View>
+                                    <View style={styles.progressBarContainer}>
+                                        <View
+                                            style={[
+                                                styles.progressBar,
+                                                { width: `${cat.percentage}%`, backgroundColor: cat.color }
+                                            ]}
+                                        />
+                                    </View>
                                 </View>
                             </View>
                             <Text style={styles.categoryAmount}>{formatAmount(cat.amount)}</Text>
                         </View>
+
                     ))
                 )}
 
@@ -258,7 +307,14 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     categoryInfo: {
+        flex: 1,
         marginLeft: 12,
+    },
+    categoryNameRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: 6,
     },
     categoryName: {
         color: colors.textPrimary,
@@ -268,8 +324,18 @@ const styles = StyleSheet.create({
     categoryPercentage: {
         color: colors.textMuted,
         fontSize: 12,
-        marginTop: 2,
     },
+    progressBarContainer: {
+        height: 6,
+        backgroundColor: colors.backgroundSecondary,
+        borderRadius: 3,
+        overflow: 'hidden',
+    },
+    progressBar: {
+        height: '100%',
+        borderRadius: 3,
+    },
+
     categoryAmount: {
         color: colors.textPrimary,
         fontSize: 15,
@@ -329,6 +395,35 @@ const styles = StyleSheet.create({
         fontWeight: '600',
     },
     toggleTextActive: {
+        color: '#fff',
+    },
+    subToggleContainer: {
+        flexDirection: 'row',
+        backgroundColor: colors.backgroundSecondary,
+        borderRadius: 12,
+        padding: 2,
+        marginBottom: 24,
+        width: 140,
+        alignSelf: 'center',
+    },
+    subToggleButton: {
+        flex: 1,
+        paddingVertical: 6,
+        alignItems: 'center',
+        borderRadius: 10,
+    },
+    subToggleButtonActiveExpense: {
+        backgroundColor: colors.primary,
+    },
+    subToggleButtonActiveIncome: {
+        backgroundColor: colors.success,
+    },
+    subToggleText: {
+        color: colors.textSecondary,
+        fontSize: 13,
+        fontWeight: '600',
+    },
+    subToggleTextActive: {
         color: '#fff',
     },
     periodBadge: {

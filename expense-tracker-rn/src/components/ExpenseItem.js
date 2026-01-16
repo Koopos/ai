@@ -7,11 +7,12 @@ import { formatAmount, formatDate } from '../utils/helpers';
 
 const ExpenseItem = ({ expense, onDelete, onPress }) => {
     const category = getCategoryById(expense.categoryId);
+    const isIncome = expense.type === 'income';
 
     const handleDelete = () => {
         Alert.alert(
             '删除记录',
-            `确定要删除这笔 ${formatAmount(expense.amount)} 的支出吗？`,
+            `确定要删除这笔 ${formatAmount(expense.amount)} 的${isIncome ? '收入' : '支出'}吗？`,
             [
                 { text: '取消', style: 'cancel' },
                 { text: '删除', style: 'destructive', onPress: () => onDelete(expense.id) },
@@ -31,12 +32,15 @@ const ExpenseItem = ({ expense, onDelete, onPress }) => {
                 ) : null}
             </View>
             <View style={styles.right}>
-                <Text style={styles.amount}>-{formatAmount(expense.amount)}</Text>
+                <Text style={[styles.amount, isIncome && styles.amountIncome]}>
+                    {isIncome ? '+' : '-'}{formatAmount(expense.amount)}
+                </Text>
                 <Text style={styles.date}>{formatDate(expense.date)}</Text>
             </View>
         </TouchableOpacity>
     );
 };
+
 
 const styles = StyleSheet.create({
     container: {
@@ -76,6 +80,10 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: '700',
     },
+    amountIncome: {
+        color: colors.success,
+    },
+
     date: {
         color: colors.textMuted,
         fontSize: 12,

@@ -68,11 +68,19 @@ export const groupByDate = (expenses) => {
             groups[dateKey] = {
                 date: exp.date,
                 items: [],
-                total: 0,
+                totalIncome: 0,
+                totalExpense: 0,
+                netBalance: 0,
             };
         }
         groups[dateKey].items.push(exp);
-        groups[dateKey].total += exp.amount;
+        if (exp.type === 'income') {
+            groups[dateKey].totalIncome += exp.amount;
+        } else {
+            groups[dateKey].totalExpense += exp.amount;
+        }
+        groups[dateKey].netBalance = groups[dateKey].totalIncome - groups[dateKey].totalExpense;
     });
     return Object.values(groups).sort((a, b) => new Date(b.date) - new Date(a.date));
 };
+

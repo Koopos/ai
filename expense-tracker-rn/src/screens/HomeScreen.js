@@ -11,39 +11,33 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { useFocusEffect } from '@react-navigation/native';
 import colors, { gradients } from '../constants/colors';
-import { getExpenses, deleteExpense, getStats } from '../services/storage';
+import { useExpenses } from '../context/ExpenseContext';
 import { formatAmount, getMonthStart, getMonthEnd } from '../utils/helpers';
 import ExpenseItem from '../components/ExpenseItem';
+import * as Haptics from 'expo-haptics';
+
 
 const HomeScreen = ({ navigation }) => {
-    const [expenses, setExpenses] = useState([]);
-    const [monthTotal, setMonthTotal] = useState(0);
+    const { expenses, getStats, deleteExpense, refreshExpenses, loading } = useExpenses();
+    const [stats, setStats] = useState({ total: 0, income: 0, expense: 0, balance: 0 });
     const [refreshing, setRefreshing] = useState(false);
 
-    const loadData = async () => {
-        const allExpenses = await getExpenses();
-        setExpenses(allExpenses.slice(0, 10)); // 只显示最近10条
-
-        const stats = await getStats(getMonthStart(), getMonthEnd());
-        setMonthTotal(stats.total);
-    };
-
-    useFocusEffect(
-        useCallback(() => {
-            loadData();
-        }, [])
-    );
+    useEffect(() => {
+        const currentStats = getStats(getMonthStart(), getMonthEnd());
+        setStats(currentStats);
+    }, [expenses, getStats]);
 
     const onRefresh = async () => {
         setRefreshing(true);
-        await loadData();
+        await refreshExpenses();
         setRefreshing(false);
     };
 
     const handleDelete = async (id) => {
         await deleteExpense(id);
-        loadData();
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     };
+
 
     const renderHeader = () => (
         <View style={styles.header}>
@@ -53,15 +47,41 @@ const HomeScreen = ({ navigation }) => {
                 end={{ x: 1, y: 1 }}
                 style={styles.balanceCard}
             >
-                <Text style={styles.balanceLabel}>本月支出</Text>
-                <Text style={styles.balanceAmount}>{formatAmount(monthTotal)}</Text>
-                <View style={styles.balanceFooter}>
-                    <Ionicons name="calendar-outline" size={14} color="rgba(255,255,255,0.7)" />
-                    <Text style={styles.balanceDate}>
-                        {new Date().getFullYear()}年{new Date().getMonth() + 1}月
-                    </Text>
+                <View style={styles.balanceHeader}>
+                    <View>
+                        <Text style={styles.balanceLabel}>本月结余</Text>
+                        <Text style={styles.balanceAmount}>{formatAmount(stats.balance)}</Text>
+                    </View>
+                    <View style={styles.monthBadge}>
+                        <Text style={styles.monthText}>
+                            {new Date().getMonth() + 1}月
+                        </Text>
+                    </View>
+                </View>
+
+                <View style={styles.statsRow}>
+                    <View style={styles.statItem}>
+                        <View style={styles.statIconContainer}>
+                            <Ionicons name="arrow-down-circle" size={18} color="#fff" />
+                        </View>
+                        <View>
+                            <Text style={styles.statLabel}>收入</Text>
+                            <Text style={styles.statValue}>{formatAmount(stats.income)}</Text>
+                        </View>
+                    </View>
+                    <View style={styles.statDivider} />
+                    <View style={styles.statItem}>
+                        <View style={styles.statIconContainer}>
+                            <Ionicons name="arrow-up-circle" size={18} color="#fff" />
+                        </View>
+                        <View>
+                            <Text style={styles.statLabel}>支出</Text>
+                            <Text style={styles.statValue}>{formatAmount(stats.expense)}</Text>
+                        </View>
+                    </View>
                 </View>
             </LinearGradient>
+
 
             <View style={styles.sectionHeader}>
                 <Text style={styles.sectionTitle}>最近记录</Text>
@@ -83,7 +103,7 @@ const HomeScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <FlatList
-                data={expenses}
+                data={expenses.slice(0, 10)}
                 keyExtractor={(item) => item.id}
                 renderItem={({ item }) => (
                     <ExpenseItem
@@ -125,25 +145,69 @@ const styles = StyleSheet.create({
         marginBottom: 28,
     },
     balanceLabel: {
-        color: 'rgba(255,255,255,0.9)',
-        fontSize: 14,
-        marginBottom: 8,
+        color: 'rgba(255,255,255,0.8)',
+        fontSize: 13,
+        marginBottom: 4,
     },
     balanceAmount: {
         color: '#fff',
-        fontSize: 42,
+        fontSize: 36,
         fontWeight: '700',
         letterSpacing: -1,
     },
-    balanceFooter: {
+    balanceHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: 24,
+    },
+    monthBadge: {
+        backgroundColor: 'rgba(255,255,255,0.2)',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        borderRadius: 12,
+    },
+    monthText: {
+        color: '#fff',
+        fontSize: 14,
+        fontWeight: '700',
+    },
+    statsRow: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginTop: 16,
+        backgroundColor: 'rgba(0,0,0,0.1)',
+        borderRadius: 20,
+        padding: 16,
     },
-    balanceDate: {
+    statItem: {
+        flex: 1,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    statIconContainer: {
+        width: 32,
+        height: 32,
+        borderRadius: 16,
+        backgroundColor: 'rgba(255,255,255,0.15)',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 10,
+    },
+    statLabel: {
         color: 'rgba(255,255,255,0.7)',
-        fontSize: 13,
-        marginLeft: 6,
+        fontSize: 11,
+        marginBottom: 2,
+    },
+    statValue: {
+        color: '#fff',
+        fontSize: 15,
+        fontWeight: '700',
+    },
+    statDivider: {
+        width: 1,
+        height: 24,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        marginHorizontal: 15,
     },
     sectionHeader: {
         flexDirection: 'row',
