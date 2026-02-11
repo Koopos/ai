@@ -9,9 +9,10 @@ import {
     Platform,
     ScrollView,
     Alert,
+    Keyboard,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import CustomDatePicker from '../components/CustomDatePicker';
+import WheelDatePicker from '../components/WheelDatePicker';
 import colors from '../constants/colors';
 import CategoryPicker from '../components/CategoryPicker';
 import { useExpenses } from '../context/ExpenseContext';
@@ -134,7 +135,10 @@ const AddExpenseScreen = ({ navigation, route }) => {
                     <Text style={styles.label}>日期</Text>
                     <TouchableOpacity
                         style={styles.dateSelector}
-                        onPress={() => setShowDatePicker(true)}
+                        onPress={() => {
+                            Keyboard.dismiss();
+                            setShowDatePicker(true);
+                        }}
                     >
                         <Ionicons name="calendar-outline" size={20} color={colors.primary} />
                         <Text style={styles.dateText}>
@@ -145,14 +149,12 @@ const AddExpenseScreen = ({ navigation, route }) => {
                             })}
                         </Text>
                     </TouchableOpacity>
-                    {showDatePicker && (
-                        <CustomDatePicker
-                            visible={showDatePicker}
-                            initialDate={date}
-                            onConfirm={onDateConfirm}
-                            onCancel={() => setShowDatePicker(false)}
-                        />
-                    )}
+                    <WheelDatePicker
+                        visible={showDatePicker}
+                        initialDate={date}
+                        onConfirm={onDateConfirm}
+                        onCancel={() => setShowDatePicker(false)}
+                    />
                 </View>
 
                 {/* 备注输入 */}

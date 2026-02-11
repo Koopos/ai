@@ -69,7 +69,7 @@ const HistoryScreen = ({ navigation }) => {
                     <ExpenseItem
                         expense={item}
                         onDelete={handleDelete}
-                        onPress={() => navigation.navigate('AddExpense', { expense: item })}
+                        onPress={() => navigation.navigate('Add', { expense: item })}
                     />
                 )}
                 renderSectionHeader={renderSectionHeader}

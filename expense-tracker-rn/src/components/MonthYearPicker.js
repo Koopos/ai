@@ -5,7 +5,7 @@ import {
     StyleSheet,
     Modal,
     TouchableOpacity,
-    TouchableWithoutFeedback,
+    Pressable,
 } from 'react-native';
 import colors from '../constants/colors';
 import WheelPicker from './WheelPicker';
@@ -14,16 +14,32 @@ const MonthYearPicker = ({ visible, initialDate, mode = 'month', onConfirm, onCa
     const [year, setYear] = useState(initialDate.getFullYear());
     const [month, setMonth] = useState(initialDate.getMonth() + 1);
 
-    const years = [];
-    const currentYear = new Date().getFullYear();
-    for (let i = currentYear - 5; i <= currentYear; i++) {
-        years.push({ label: `${i}年`, value: i });
-    }
+    // 当 initialDate 或 modal 显示时更新状态
+    useEffect(() => {
+        if (visible) {
+            setYear(initialDate.getFullYear());
+            setMonth(initialDate.getMonth() + 1);
+        }
+    }, [visible, initialDate]);
 
-    const months = [];
-    for (let i = 1; i <= 12; i++) {
-        months.push({ label: `${i}月`, value: i });
-    }
+    // 年份范围：当前年份往前10年，使用 useMemo 避免重复创建
+    const years = React.useMemo(() => {
+        const currentYear = new Date().getFullYear();
+        const result = [];
+        for (let i = currentYear - 10; i <= currentYear; i++) {
+            result.push({ label: `${i}年`, value: i });
+        }
+        return result.reverse(); // 最新的年份在上面
+    }, []); // Empty deps since we only compute once
+
+    // 12个月份，使用 useMemo 避免重复创建
+    const months = React.useMemo(() => {
+        const result = [];
+        for (let i = 1; i <= 12; i++) {
+            result.push({ label: `${i}月`, value: i });
+        }
+        return result;
+    }, []);
 
     const handleConfirm = () => {
         const selectedDate = new Date(year, month - 1, 1);
@@ -36,44 +52,49 @@ const MonthYearPicker = ({ visible, initialDate, mode = 'month', onConfirm, onCa
             transparent={true}
             animationType="fade"
             onRequestClose={onCancel}
+            statusBarTranslucent={true}
         >
-            <TouchableWithoutFeedback onPress={onCancel}>
-                <View style={styles.overlay}>
-                    <TouchableWithoutFeedback onPress={(e) => e.stopPropagation()}>
-                        <View style={styles.modalContent}>
-                            <View style={styles.header}>
-                                <TouchableOpacity onPress={onCancel}>
-                                    <Text style={styles.cancelText}>取消</Text>
-                                </TouchableOpacity>
-                                <Text style={styles.title}>
-                                    {mode === 'month' ? '选择月份' : '选择年份'}
-                                </Text>
-                                <TouchableOpacity onPress={handleConfirm}>
-                                    <Text style={styles.confirmText}>确定</Text>
-                                </TouchableOpacity>
-                            </View>
+            <Pressable
+                style={styles.overlay}
+                onPress={onCancel}
+                android_ripple={null}
+            >
+                <Pressable
+                    style={styles.modalContent}
+                    onPress={(e) => e.stopPropagation()}
+                    android_ripple={null}
+                >
+                    <View style={styles.header}>
+                        <TouchableOpacity onPress={onCancel}>
+                            <Text style={styles.cancelText}>取消</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.title}>
+                            {mode === 'month' ? '选择年月' : '选择年份'}
+                        </Text>
+                        <TouchableOpacity onPress={handleConfirm}>
+                            <Text style={styles.confirmText}>确定</Text>
+                        </TouchableOpacity>
+                    </View>
 
-                            <View style={[
-                                styles.pickerContainer,
-                                mode === 'year' && { justifyContent: 'center' }
-                            ]}>
-                                <WheelPicker
-                                    data={years}
-                                    selectedValue={year}
-                                    onValueChange={setYear}
-                                />
-                                {mode === 'month' && (
-                                    <WheelPicker
-                                        data={months}
-                                        selectedValue={month}
-                                        onValueChange={setMonth}
-                                    />
-                                )}
-                            </View>
-                        </View>
-                    </TouchableWithoutFeedback>
-                </View>
-            </TouchableWithoutFeedback>
+                    <View style={[
+                        styles.pickerContainer,
+                        mode === 'year' && styles.pickerContainerCenter
+                    ]}>
+                        <WheelPicker
+                            data={years}
+                            selectedValue={year}
+                            onValueChange={setYear}
+                        />
+                        {mode === 'month' && (
+                            <WheelPicker
+                                data={months}
+                                selectedValue={month}
+                                onValueChange={setMonth}
+                            />
+                        )}
+                    </View>
+                </Pressable>
+            </Pressable>
         </Modal>
     );
 };
@@ -89,6 +110,7 @@ const styles = StyleSheet.create({
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         paddingBottom: 40,
+        paddingTop: 10,
     },
     header: {
         flexDirection: 'row',
@@ -116,6 +138,10 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         paddingHorizontal: 20,
         marginTop: 20,
+        justifyContent: 'space-around',
+    },
+    pickerContainerCenter: {
+        justifyContent: 'center',
     },
 });
 

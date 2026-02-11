@@ -1,9 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
     View,
     Text,
     StyleSheet,
     ScrollView,
+    Dimensions,
 } from 'react-native';
 import colors from '../constants/colors';
 
@@ -13,9 +14,14 @@ const VISIBLE_ITEMS = 5;
 const WheelPicker = ({ data, selectedValue, onValueChange }) => {
     const scrollViewRef = useRef(null);
     const isInternalUpdate = useRef(false);
-    const [activeIndex, setActiveIndex] = React.useState(
-        data.findIndex(item => item.value === selectedValue)
-    );
+
+    // Calculate initial index safely
+    const getInitialIndex = () => {
+        const index = data.findIndex(item => item.value === selectedValue);
+        return index !== -1 ? index : 0;
+    };
+
+    const [activeIndex, setActiveIndex] = useState(getInitialIndex());
 
     useEffect(() => {
         const index = data.findIndex(item => item.value === selectedValue);
@@ -32,7 +38,7 @@ const WheelPicker = ({ data, selectedValue, onValueChange }) => {
                 return () => clearTimeout(timer);
             }
         }
-    }, [selectedValue, data]);
+    }, [selectedValue, activeIndex, data.length, data]);
 
     const handleValueChange = (index) => {
         if (index >= 0 && index < data.length) {
@@ -51,7 +57,7 @@ const WheelPicker = ({ data, selectedValue, onValueChange }) => {
         const index = Math.round(y / ITEM_HEIGHT);
         // Force alignment to exactly match ITEM_HEIGHT multiples
         scrollViewRef.current?.scrollTo({
-            y: index * ITEM_HEIGHT,
+            y: Math.max(0, Math.min(index * ITEM_HEIGHT, (data.length - 1) * ITEM_HEIGHT)),
             animated: true,
         });
         handleValueChange(index);
@@ -62,10 +68,6 @@ const WheelPicker = ({ data, selectedValue, onValueChange }) => {
         const index = Math.round(y / ITEM_HEIGHT);
         if (index >= 0 && index < data.length && index !== activeIndex) {
             setActiveIndex(index);
-            // We only update parent state on scroll if we want ultra-responsive UI,
-            // but it's safer to do it on momentum end or just keep local state for highlighting
-            // and sync on momentum end. However, user wants "dynamic" and "confirm uses latest".
-            // Let's sync parent state in handleScroll too.
             isInternalUpdate.current = true;
             onValueChange(data[index].value);
             setTimeout(() => {
@@ -74,21 +76,30 @@ const WheelPicker = ({ data, selectedValue, onValueChange }) => {
         }
     };
 
+    const totalHeight = ITEM_HEIGHT * data.length;
+
     return (
         <View style={styles.container}>
-            <View style={styles.highlightOverlay} />
+            {/* Selection indicator */}
+            <View style={styles.selectionIndicator} />
+
             <ScrollView
                 ref={scrollViewRef}
+                style={styles.scrollView}
                 showsVerticalScrollIndicator={false}
                 snapToInterval={ITEM_HEIGHT}
                 snapToAlignment="start"
                 decelerationRate="fast"
+                bounces={true}
+                scrollEnabled={true}
                 onMomentumScrollEnd={onMomentumScrollEnd}
                 onScroll={handleScroll}
                 scrollEventThrottle={16}
-                nestedScrollEnabled={true}
+                overScrollMode="always"
                 contentContainerStyle={{
-                    paddingVertical: ITEM_HEIGHT * 2,
+                    paddingTop: ITEM_HEIGHT * 2,
+                    paddingBottom: ITEM_HEIGHT * 2,
+                    minHeight: totalHeight + ITEM_HEIGHT * 4,
                 }}
             >
                 {data.map((item, index) => {
@@ -112,27 +123,29 @@ const WheelPicker = ({ data, selectedValue, onValueChange }) => {
 const styles = StyleSheet.create({
     container: {
         height: ITEM_HEIGHT * VISIBLE_ITEMS,
-        width: '33%',
+        width: Dimensions.get('window').width / 2,
+        position: 'relative',
     },
-    highlightOverlay: {
+    scrollView: {
+        flex: 1,
+    },
+    selectionIndicator: {
         position: 'absolute',
         top: ITEM_HEIGHT * 2,
-        left: 0,
-        right: 0,
+        left: 10,
+        right: 10,
         height: ITEM_HEIGHT,
-        backgroundColor: 'rgba(0,0,0,0.05)',
+        backgroundColor: 'rgba(255,255,255,0.1)',
         borderRadius: 8,
-        borderTopWidth: 1,
-        borderBottomWidth: 1,
-        borderColor: 'rgba(0,0,0,0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+        zIndex: 1,
+        pointerEvents: 'none',
     },
     item: {
         height: ITEM_HEIGHT,
         justifyContent: 'center',
         alignItems: 'center',
-        // Ensure no extra padding interferes with centering
-        padding: 0,
-        margin: 0,
     },
     itemText: {
         fontSize: 18,

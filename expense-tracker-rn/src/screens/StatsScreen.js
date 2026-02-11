@@ -186,7 +186,7 @@ const StatsScreen = () => {
                                 </View>
                                 <View style={styles.categoryInfo}>
                                     <View style={styles.categoryNameRow}>
-                                        <Text style={styles.categoryName}>{cat.name}</Text>
+                                        <Text style={styles.categoryName} numberOfLines={1} ellipsizeMode="tail">{cat.name}</Text>
                                         <Text style={styles.categoryPercentage}>
                                             {cat.percentage.toFixed(1)}%
                                         </Text>
@@ -201,7 +201,9 @@ const StatsScreen = () => {
                                     </View>
                                 </View>
                             </View>
-                            <Text style={styles.categoryAmount}>{formatAmount(cat.amount)}</Text>
+                            <View style={styles.categoryAmountWrapper}>
+                                <Text style={styles.categoryAmount}>{formatAmount(cat.amount)}</Text>
+                            </View>
                         </View>
 
                     ))
@@ -320,6 +322,7 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
         fontSize: 15,
         fontWeight: '500',
+        flex: 1,
     },
     categoryPercentage: {
         color: colors.textMuted,
@@ -336,6 +339,9 @@ const styles = StyleSheet.create({
         borderRadius: 3,
     },
 
+    categoryAmountWrapper: {
+        marginLeft: 8,
+    },
     categoryAmount: {
         color: colors.textPrimary,
         fontSize: 15,
