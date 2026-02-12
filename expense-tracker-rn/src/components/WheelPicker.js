@@ -123,7 +123,7 @@ const WheelPicker = ({ data, selectedValue, onValueChange }) => {
 const styles = StyleSheet.create({
     container: {
         height: ITEM_HEIGHT * VISIBLE_ITEMS,
-        width: Dimensions.get('window').width / 2,
+        width: Dimensions.get('window').width / 1.2,
         position: 'relative',
     },
     scrollView: {
