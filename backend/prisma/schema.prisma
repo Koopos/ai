@@ -1,0 +1,378 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================
+// User and Auth
+// ============================================
+
+model User {
+  id            String   @id @default(cuid())
+  username      String   @unique
+  email         String?   @unique
+  passwordHash  String
+  displayName   String
+  avatar        String?
+  role          UserRole  @default(MEMBER)
+  familyId      String?
+  family        Family?  @relation(fields: [familyId], references: [id])
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  dailyTasks   DailyTask[]
+  notes         Note[]
+  books         Book[]
+  readingNotes  ReadingNote[]
+  movies        Movie[]
+  watchHistory  WatchHistory[]
+  playlists     Playlist[]
+  uploadedFiles File[]          @relation("UploadedBy")
+  sharedFiles   File[]          @relation("SharedBy")
+
+  @@index([familyId])
+  @@map("users")
+}
+
+enum UserRole {
+  ADMIN
+  MEMBER
+  GUEST
+}
+
+model Family {
+  id          String   @id @default(cuid())
+  name        String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  members     User[]
+
+  @@map("families")
+}
+
+// ============================================
+// Daily Management
+// ============================================
+
+model DailyTask {
+  id            String      @id @default(cuid())
+  title         String
+  description    String?
+  status        TaskStatus  @default(PENDING)
+  priority      Priority    @default(MEDIUM)
+  dueDate       DateTime?
+  assignedToId  String?
+  assignedTo    User?       @relation(fields: [assignedToId], references: [id], onDelete: SetNull)
+  category      String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  completedAt   DateTime?
+
+  @@index([assignedToId])
+  @@index([status])
+  @@map("daily_tasks")
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  content     String  @db.Text
+  color       String?
+  isPinned    Boolean  @default(false)
+  authorId    String
+  author      User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([authorId])
+  @@map("notes")
+}
+
+model Event {
+  id          String    @id @default(cuid())
+  title       String
+  description String?   @db.Text
+  startTime   DateTime
+  endTime     DateTime?
+  location    String?
+  color       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("events")
+}
+
+// ============================================
+// Reading/Books
+// ============================================
+
+model Book {
+  id              String        @id @default(cuid())
+  title           String
+  author          String
+  isbn            String?       @unique
+  cover           String?
+  description     String?       @db.Text
+  publisher       String?
+  publishYear     Int?
+  genre           String?
+  language        String?
+  pageCount       Int?
+  filePath        String?
+  addedById       String
+  addedBy         User          @relation(fields: [addedById], references: [id], onDelete: Cascade)
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  readingProgress ReadingProgress[]
+  notes           ReadingNote[]
+
+  @@index([addedById])
+  @@index([genre])
+  @@map("books")
+}
+
+model ReadingProgress {
+  id          String        @id @default(cuid())
+  bookId      String
+  book        Book         @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  currentPage Int           @default(0)
+  totalPages  Int?
+  status      ReadingStatus @default(NOT_STARTED)
+  startDate   DateTime?
+  finishDate  DateTime?
+  lastReadAt  DateTime      @default(now())
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@unique([bookId])
+  @@index([status])
+  @@map("reading_progress")
+}
+
+enum ReadingStatus {
+  NOT_STARTED
+  READING
+  COMPLETED
+  ABANDONED
+}
+
+model ReadingNote {
+  id          String   @id @default(cuid())
+  bookId      String
+  book        Book     @relation(fields: [bookId], references: [id], onDelete: Cascade)
+  authorId    String
+  author      User      @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  content     String   @db.Text
+  pageNumber  Int?
+  highlight   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([bookId])
+  @@index([authorId])
+  @@map("reading_notes")
+}
+
+// ============================================
+// Movies
+// ============================================
+
+model Movie {
+  id            String        @id @default(cuid())
+  title         String
+  originalTitle String?
+  year          Int?
+  rating        Float?
+  runtime       Int? // minutes
+  genre         String[]
+  director      String?
+  cast          String[]
+  plot          String?       @db.Text
+  poster        String?
+  backdrop       String?
+  tmdbId        String?      @unique
+  filePath      String
+  addedById     String
+  addedBy       User          @relation(fields: [addedById], references: [id], onDelete: Cascade)
+  watchedCount  Int           @default(0)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  watchHistory  WatchHistory[]
+
+  @@index([addedById])
+  @@index([year])
+  @@map("movies")
+}
+
+model WatchHistory {
+  id        String   @id @default(cuid())
+  movieId   String
+  movie     Movie    @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  progress  Int      @default(0) // seconds
+  completed Boolean  @default(false)
+  watchedAt DateTime  @default(now())
+
+  @@index([movieId])
+  @@index([userId])
+  @@map("watch_history")
+}
+
+// ============================================
+// Music
+// ============================================
+
+model Artist {
+  id        String    @id @default(cuid())
+  name      String    @unique
+  bio       String?   @db.Text
+  image     String?
+  createdAt DateTime  @default(now())
+
+  albums    Album[]
+  tracks    Track[]
+
+  @@map("artists")
+}
+
+model Album {
+  id        String   @id @default(cuid())
+  title     String
+  artistId  String
+  artist    Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  year      Int?
+  genre     String?
+  cover     String?
+  createdAt DateTime @default(now())
+
+  tracks    Track[]
+
+  @@index([artistId])
+  @@map("albums")
+}
+
+model Track {
+  id          String   @id @default(cuid())
+  title       String
+  artistId    String
+  artist      Artist   @relation(fields: [artistId], references: [id], onDelete: Cascade)
+  albumId     String?
+  album       Album?   @relation(fields: [albumId], references: [id], onDelete: SetNull)
+  trackNumber Int?
+  duration    Int? // seconds
+  genre       String?
+  filePath    String
+  createdAt   DateTime @default(now())
+
+  playlistTracks PlaylistTrack[]
+
+  @@index([artistId])
+  @@index([albumId])
+  @@map("tracks")
+}
+
+model Playlist {
+  id          String   @id @default(cuid())
+  name        String
+  description String?  @db.Text
+  isPublic    Boolean  @default(false)
+  cover       String?
+  ownerId     String
+  owner       User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  tracks      PlaylistTrack[]
+
+  @@index([ownerId])
+  @@map("playlists")
+}
+
+model PlaylistTrack {
+  id         String   @id @default(cuid())
+  playlistId String
+  playlist   Playlist  @relation(fields: [playlistId], references: [id], onDelete: Cascade)
+  trackId    String
+  track      Track     @relation(fields: [trackId], references: [id], onDelete: Cascade)
+  position   Int
+  addedAt    DateTime  @default(now())
+
+  @@unique([playlistId, trackId])
+  @@index([playlistId])
+  @@map("playlist_tracks")
+}
+
+// ============================================
+// File Sharing
+// ============================================
+
+model File {
+  id            String      @id @default(cuid())
+  name          String
+  originalName  String
+  mimeType     String
+  size          BigInt
+  path          String
+  hash          String?     @unique
+  folderId      String?
+  folder        Folder?     @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  uploadedById  String
+  uploadedBy    User         @relation("UploadedBy", fields: [uploadedById], references: [id], onDelete: Cascade)
+  sharedById    String?
+  sharedBy      User?        @relation("SharedBy", fields: [sharedById], references: [id], onDelete: SetNull)
+  accessLevel   AccessLevel  @default(PRIVATE)
+  downloadCount Int          @default(0)
+  expiresAt     DateTime?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([folderId])
+  @@index([uploadedById])
+  @@index([accessLevel])
+  @@map("files")
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  parentId  String?
+  parent    Folder?  @relation("FolderHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children  Folder[] @relation("FolderHierarchy")
+  files     File[]
+  createdAt DateTime  @default(now())
+
+  @@index([parentId])
+  @@map("folders")
+}
+
+enum AccessLevel {
+  PRIVATE
+  FAMILY
+  SHARED
+  PUBLIC
+}

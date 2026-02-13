@@ -12,7 +12,7 @@ import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import colors from '../constants/colors';
 import { useExpenses } from '../context/ExpenseContext';
-import MonthYearPicker from '../components/MonthYearPicker';
+import MonthYearWheelPicker from '../components/MonthYearWheelPicker';
 import { getCategoryById, categories } from '../constants/categories';
 import * as Haptics from 'expo-haptics';
 
@@ -157,7 +157,7 @@ const StatsScreen = () => {
             </TouchableOpacity>
 
 
-            <MonthYearPicker
+            <MonthYearWheelPicker
                 visible={showPicker}
                 initialDate={selectedDate}
                 mode={viewType}
@@ -191,18 +191,20 @@ const StatsScreen = () => {
                                             {cat.percentage.toFixed(1)}%
                                         </Text>
                                     </View>
-                                    <View style={styles.progressBarContainer}>
-                                        <View
-                                            style={[
-                                                styles.progressBar,
-                                                { width: `${cat.percentage}%`, backgroundColor: cat.color }
-                                            ]}
-                                        />
-                                    </View>
                                 </View>
                             </View>
-                            <View style={styles.categoryAmountWrapper}>
-                                <Text style={styles.categoryAmount}>{formatAmount(cat.amount)}</Text>
+                            <View style={styles.categoryRight}>
+                                <View style={styles.progressBarContainer}>
+                                    <View
+                                        style={[
+                                            styles.progressBar,
+                                            { width: `${Math.min(cat.percentage, 100)}%`, backgroundColor: cat.color }
+                                        ]}
+                                    />
+                                </View>
+                                <View style={styles.categoryAmountWrapper}>
+                                    <Text style={styles.categoryAmount}>{formatAmount(cat.amount)}</Text>
+                                </View>
                             </View>
                         </View>
 
@@ -300,6 +302,8 @@ const styles = StyleSheet.create({
     categoryLeft: {
         flexDirection: 'row',
         alignItems: 'center',
+        flex: 1,
+        marginRight: 12,
     },
     categoryIcon: {
         width: 40,
@@ -316,7 +320,6 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
-        marginBottom: 6,
     },
     categoryName: {
         color: colors.textPrimary,
@@ -327,9 +330,16 @@ const styles = StyleSheet.create({
     categoryPercentage: {
         color: colors.textMuted,
         fontSize: 12,
+        marginLeft: 8,
+    },
+    categoryRight: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        minWidth: 120,
     },
     progressBarContainer: {
         height: 6,
+        width: 50,
         backgroundColor: colors.backgroundSecondary,
         borderRadius: 3,
         overflow: 'hidden',

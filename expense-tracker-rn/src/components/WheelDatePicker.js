@@ -6,6 +6,7 @@ import {
     TouchableOpacity,
     Modal,
     ScrollView,
+    Pressable,
 } from 'react-native';
 import colors from '../constants/colors';
 import * as Haptics from 'expo-haptics';
@@ -145,13 +146,13 @@ const WheelDatePicker = ({ visible, initialDate, onConfirm, onCancel }) => {
 
     return (
         <Modal
-            transparent
+            transparent={true}
             visible={visible}
             animationType="slide"
             onRequestClose={onCancel}
         >
-            <View style={styles.modalContainer}>
-                <View style={styles.pickerContainer}>
+            <Pressable style={styles.modalContainer} onPress={handleCancel}>
+                <Pressable style={styles.pickerContainer} onPress={(e) => e.stopPropagation()}>
                     {/* 头部按钮 */}
                     <View style={styles.header}>
                         <TouchableOpacity
@@ -193,15 +194,8 @@ const WheelDatePicker = ({ visible, initialDate, onConfirm, onCancel }) => {
                             scrollRef={dayScrollRef}
                         />
                     </View>
-
-                    {/* 标签 */}
-                    <View style={styles.labels}>
-                        <Text style={styles.label}>年</Text>
-                        <Text style={styles.label}>月</Text>
-                        <Text style={styles.label}>日</Text>
-                    </View>
-                </View>
-            </View>
+                </Pressable>
+            </Pressable>
         </Modal>
     );
 };
@@ -210,10 +204,10 @@ const styles = StyleSheet.create({
     modalContainer: {
         flex: 1,
         justifyContent: 'flex-end',
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
     },
     pickerContainer: {
-        backgroundColor: colors.card,
+        backgroundColor: '#222222',
         borderTopLeftRadius: 24,
         borderTopRightRadius: 24,
         paddingBottom: 34,
@@ -261,7 +255,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: PICKER_HEIGHT / 2 - ITEM_HEIGHT / 2,
-        backgroundColor: colors.card,
+        // backgroundColor: colors.card,
         opacity: 0.9,
         zIndex: 1,
     },
@@ -271,7 +265,7 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         height: PICKER_HEIGHT / 2 - ITEM_HEIGHT / 2,
-        backgroundColor: colors.card,
+        // backgroundColor: colors.card,
         opacity: 0.9,
         zIndex: 1,
     },
@@ -301,19 +295,7 @@ const styles = StyleSheet.create({
         color: colors.textPrimary,
         fontWeight: '700',
     },
-    labels: {
-        flexDirection: 'row',
-        justifyContent: 'center',
-        marginTop: 8,
-        paddingHorizontal: 20,
-    },
-    label: {
-        fontSize: 14,
-        color: colors.textSecondary,
-        fontWeight: '500',
-        width: 80,
-        textAlign: 'center',
-    },
 });
 
+export { WheelColumn };
 export default WheelDatePicker;
