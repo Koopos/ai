@@ -263,6 +263,10 @@
         <div class="header">
             <h1>📁 局域网文件共享</h1>
             <p>在局域网内轻松分享文件</p>
+            <div id="qrContainer" style="margin-top: 20px; display: none;">
+                <img id="qrcode" alt="扫码访问" style="width: 200px; height: 200px; border-radius: 10px; border: 5px solid white; box-shadow: 0 4px 15px rgba(0,0,0,0.2);">
+                <p style="color: white; margin-top: 10px; font-size: 0.9rem;">📱 用手机扫码访问</p>
+            </div>
         </div>
 
         <div class="upload-zone" id="uploadZone">
@@ -435,6 +439,17 @@
 
         // 初始加载
         loadFiles();
+
+        // 加载二维码
+        const qrImg = document.getElementById('qrcode');
+        const qrContainer = document.getElementById('qrContainer');
+        qrImg.onload = function() {
+            qrContainer.style.display = 'block';
+        };
+        qrImg.onerror = function() {
+            console.log('二维码图片加载失败');
+        };
+        qrImg.src = '/qrcode.png?' + Date.now(); // 防止缓存
     </script>
 </body>
 </html>

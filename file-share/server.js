@@ -3,6 +3,7 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const cors = require('cors');
+const QRCode = require('qrcode');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,6 +12,16 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// 提供二维码图片访问
+app.get('/qrcode.png', (req, res) => {
+    const qrPath = path.join(__dirname, 'qrcode.png');
+    if (fs.existsSync(qrPath)) {
+        res.sendFile(qrPath);
+    } else {
+        res.status(404).send('二维码未生成');
+    }
+});
 
 // 确保上传目录存在
 const UPLOAD_DIR = path.join(__dirname, 'uploads');
@@ -112,12 +123,39 @@ function getLocalIP() {
 }
 
 // 启动服务器
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, '0.0.0.0', async () => {
     const localIP = getLocalIP();
+    const lanURL = `http://${localIP}:${PORT}`;
+
     console.log('=================================');
     console.log('   文件共享服务器已启动！');
     console.log('=================================');
     console.log(`   本地访问: http://localhost:${PORT}`);
-    console.log(`   局域网访问: http://${localIP}:${PORT}`);
+    console.log(`   局域网访问: ${lanURL}`);
+    console.log('=================================');
+    console.log('');
+    console.log('   正在生成二维码...');
+
+    // 生成二维码图片
+    const qrPath = path.join(__dirname, 'qrcode.png');
+    try {
+        await QRCode.toFile(qrPath, lanURL, {
+            width: 400,
+            margin: 2,
+            color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+            }
+        });
+        console.log('');
+        console.log('   ✅ 二维码已生成!');
+        console.log(`   📱 图片路径: ${qrPath}`);
+        console.log('');
+        console.log('   请用手机扫码打开图片: qrcode.png');
+        console.log('   或者访问: http://localhost:3000/qrcode.png');
+        console.log('');
+    } catch (err) {
+        console.error('   生成二维码失败:', err);
+    }
     console.log('=================================');
 });
