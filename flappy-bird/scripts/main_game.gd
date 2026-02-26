@@ -71,14 +71,19 @@ func _start_game() -> void:
 	_is_playing = true
 	_score = 0
 	ui.update_score(0)
-	player.reset()
 	pipe_spawner.start()
+	print("Game started")
 
 func _reset_game() -> void:
 	_score = 0
+	_is_playing = false
 
+	# Clear all pipes
 	for pipe in _pipes_active:
 		pipe.queue_free()
 
 	_pipes_active.clear()
+
+	# Reset player position and state
 	player.reset()
+	print("Game reset")

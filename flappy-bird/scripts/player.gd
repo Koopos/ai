@@ -12,6 +12,9 @@ signal scored()
 
 func _ready() -> void:
 	_velocity = Vector2.ZERO
+	for child in get_children():
+		if child is ColorRect:
+			child.visible = true
 
 func _physics_process(delta: float) -> void:
 	if _is_dead:
@@ -20,6 +23,12 @@ func _physics_process(delta: float) -> void:
 	# Apply gravity
 	_velocity.y += GRAVITY * delta
 	_velocity.y = min(_velocity.y, MAX_FALL_SPEED)
+
+	# Update rotation based on velocity
+	if _velocity.y < 0:
+		rotation = -0.3
+	else:
+		rotation = min(_velocity.y / 1000.0, 1.5)
 
 	# Move and check collision
 	velocity = _velocity
@@ -44,11 +53,12 @@ func _die() -> void:
 func reset() -> void:
 	_is_dead = false
 	_velocity = Vector2.ZERO
-	global_position = Vector2(200, 400)
+	position = Vector2(200, 400)
 	rotation = 0
+	visible = true
 
-func _on_Visual_frame_changed() -> void:
-	if _velocity.y < 0:
-		rotation = -0.3
-	else:
-		rotation = min(_velocity.y / 1000.0, 0.5)
+	# Ensure all visual elements are visible
+	for child in get_children():
+		child.visible = true
+
+	print("Player reset at position: ", position)

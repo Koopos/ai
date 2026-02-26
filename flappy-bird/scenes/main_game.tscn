@@ -33,3 +33,5 @@ autostart = true
 [connection signal="died" from="Player" to="." method="_on_player_died"]
 [connection signal="player_hit_ground" from="Ground" to="." method="_on_ground_player_hit"]
 [connection signal="timeout" from="PipeSpawner" to="." method="_on_pipe_spawner_timeout"]
+[connection signal="start_game" from="UI" to="." method="_on_ui_start_game"]
+[connection signal="restart_game" from="UI" to="." method="_on_ui_restart_game"]

@@ -3,6 +3,7 @@
 [ext_resource type="Script" path="res://scripts/ui.gd" id="1_4k2vy"]
 
 [node name="UI" type="CanvasLayer"]
+script = ExtResource("1_4k2vy")
 
 [node name="ScoreLabel" type="Label" parent="."]
 offset_left = 186.0
