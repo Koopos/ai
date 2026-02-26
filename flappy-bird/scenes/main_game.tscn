@@ -1,0 +1,35 @@
+[gd_scene load_steps=5 format=3 uid="uid://6cbo0qv7iq87"]
+
+[ext_resource type="PackedScene" uid="uid://dpqmwm0uqkycn" path="res://scenes/player.tscn" id="1_player"]
+[ext_resource type="PackedScene" uid="uid://dam4x0l3pnl0y" path="res://scenes/ground.tscn" id="2_ground"]
+[ext_resource type="PackedScene" uid="uid://d0n5y1m4qol0y" path="res://scenes/ui.tscn" id="4_ui"]
+[ext_resource type="Script" path="res://scripts/main_game.gd" id="5_main"]
+
+[node name="MainGame" type="Node2D"]
+script = ExtResource("5_main")
+
+[node name="Background" type="ColorRect" parent="."]
+z_index = -10
+offset_left = -216.0
+offset_top = -384.0
+offset_right = 216.0
+offset_bottom = 384.0
+color = Color(0.5, 0.8, 1, 1)
+
+[node name="Player" parent="." instance=ExtResource("1_player")]
+position = Vector2(200, 400)
+
+[node name="Ground" parent="." instance=ExtResource("2_ground")]
+position = Vector2(216, 718)
+
+[node name="Pipes" type="Node2D" parent="."]
+
+[node name="PipeSpawner" type="Timer" parent="."]
+wait_time = 1.5
+autostart = true
+
+[node name="UI" parent="." instance=ExtResource("4_ui")]
+
+[connection signal="died" from="Player" to="." method="_on_player_died"]
+[connection signal="player_hit_ground" from="Ground" to="." method="_on_ground_player_hit"]
+[connection signal="timeout" from="PipeSpawner" to="." method="_on_pipe_spawner_timeout"]
