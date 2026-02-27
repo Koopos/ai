@@ -1,0 +1,119 @@
+import { Card, Button } from '@ui-library/ui'
+
+# Card
+
+Cards contain content and actions about a single subject.
+
+## Basic Card
+
+<Card>
+  <Card.Body>
+    <p>This is a simple card with body content.</p>
+  </Card.Body>
+</Card>
+
+```tsx
+<Card>
+  <Card.Body>
+    <p>This is a simple card with body content.</p>
+  </Card.Body>
+</Card>
+```
+
+## Card with Header
+
+<Card>
+  <Card.Header title="Card Title" description="Card description goes here" />
+  <Card.Body>
+    <p>This is the card body content.</p>
+  </Card.Body>
+</Card>
+
+```tsx
+<Card>
+  <Card.Header
+    title="Card Title"
+    description="Card description goes here"
+  />
+  <Card.Body>
+    <p>This is the card body content.</p>
+  </Card.Body>
+</Card>
+```
+
+## Card with Footer
+
+<Card>
+  <Card.Header title="Confirmation" />
+  <Card.Body>
+    <p>Are you sure you want to proceed?</p>
+  </Card.Body>
+  <Card.Footer>
+    <Button variant="secondary">Cancel</Button>
+    <Button variant="primary">Confirm</Button>
+  </Card.Footer>
+</Card>
+
+```tsx
+<Card>
+  <Card.Header title="Confirmation" />
+  <Card.Body>
+    <p>Are you sure you want to proceed?</p>
+  </Card.Body>
+  <Card.Footer>
+    <Button variant="secondary">Cancel</Button>
+    <Button variant="primary">Confirm</Button>
+  </Card.Footer>
+</Card>
+```
+
+## Variants
+
+<Card variant="default">
+  <Card.Body>Default variant</Card.Body>
+</Card>
+
+<Card variant="bordered">
+  <Card.Body>Bordered variant</Card.Body>
+</Card>
+
+<Card variant="elevated">
+  <Card.Body>Elevated variant</Card.Body>
+</Card>
+
+```tsx
+<Card variant="default">
+  <Card.Body>Default variant</Card.Body>
+</Card>
+
+<Card variant="bordered">
+  <Card.Body>Bordered variant</Card.Body>
+</Card>
+
+<Card variant="elevated">
+  <Card.Body>Elevated variant</Card.Body>
+</Card>
+```
+
+## API
+
+### Card
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'default' \| 'bordered' \| 'elevated'` | `'default'` | Card style variant |
+
+### Card.Header
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `title` | `string` | - | Card title |
+| `description` | `string` | - | Card description |
+
+### Card.Body
+
+Standard div wrapper for card content.
+
+### Card.Footer
+
+Standard div wrapper for card footer actions.

@@ -1,0 +1,58 @@
+import { Input } from '@ui-library/ui'
+
+# Input
+
+Text input fields for user data entry.
+
+## Basic Usage
+
+<Input label="Email" placeholder="Enter your email" />
+
+```tsx
+<Input label="Email" placeholder="Enter your email" />
+```
+
+## With Error State
+
+<Input label="Password" error="Password is required" />
+
+```tsx
+<Input label="Password" error="Password is required" />
+```
+
+## With Helper Text
+
+<Input label="Username" helperText="Must be at least 3 characters" />
+
+```tsx
+<Input label="Username" helperText="Must be at least 3 characters" />
+```
+
+## Required Field
+
+<Input label="Email" required placeholder="Enter your email" />
+
+```tsx
+<Input label="Email" required placeholder="Enter your email" />
+```
+
+## Full Width
+
+<Input fullWidth label="Full Name" placeholder="Enter your full name" />
+
+```tsx
+<Input fullWidth label="Full Name" placeholder="Enter your full name" />
+```
+
+## API
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `label` | `string` | - | Input label |
+| `error` | `string` | - | Error message to display |
+| `helperText` | `string` | - | Helper text to display below input |
+| `required` | `boolean` | `false` | Whether field is required |
+| `fullWidth` | `boolean` | `false` | Whether input takes full width |
+| `placeholder` | `string` | - | Placeholder text |
+| `type` | `string` | `'text'` | Input type (text, email, password, etc.) |
+| `disabled` | `boolean` | `false` | Whether input is disabled |

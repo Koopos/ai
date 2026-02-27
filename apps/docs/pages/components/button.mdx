@@ -1,0 +1,58 @@
+import { Button } from '@ui-library/ui'
+
+# Button
+
+Buttons trigger actions or navigation.
+
+## Variants
+
+<Button variant="primary">Primary</Button>{' '}
+<Button variant="secondary">Secondary</Button>{' '}
+<Button variant="ghost">Ghost</Button>{' '}
+<Button variant="danger">Danger</Button>
+
+```tsx
+<Button variant="primary">Primary</Button>
+<Button variant="secondary">Secondary</Button>
+<Button variant="ghost">Ghost</Button>
+<Button variant="danger">Danger</Button>
+```
+
+## Sizes
+
+<Button size="sm">Small</Button>{' '}
+<Button size="md">Medium</Button>{' '}
+<Button size="lg">Large</Button>
+
+```tsx
+<Button size="sm">Small</Button>
+<Button size="md">Medium</Button>
+<Button size="lg">Large</Button>
+```
+
+## Full Width
+
+<Button fullWidth>Full Width Button</Button>
+
+```tsx
+<Button fullWidth>Full Width Button</Button>
+```
+
+## Disabled
+
+<Button disabled>Disabled Button</Button>
+
+```tsx
+<Button disabled>Disabled Button</Button>
+```
+
+## API
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `variant` | `'primary' \| 'secondary' \| 'ghost' \| 'danger'` | `'primary'` | Button style variant |
+| `size` | `'sm' \| 'md' \| 'lg'` | `'md'` | Button size |
+| `fullWidth` | `boolean` | `false` | Whether button takes full width |
+| `disabled` | `boolean` | `false` | Whether button is disabled |
+| `onClick` | `() => void` | - | Click handler |
+| `type` | `'button' \| 'submit' \| 'reset'` | `'button'` | Button type |

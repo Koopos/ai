@@ -1,0 +1,168 @@
+import { Modal, Button } from '@ui-library/ui'
+import { useState } from 'react'
+
+# Modal
+
+Dialog windows that overlay the page content.
+
+## Basic Usage
+
+<ModalDemo />
+
+```tsx
+import { Modal, Button } from '@ui-library/ui'
+import { useState } from 'react'
+
+function ModalDemo() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+        <p>This is a modal dialog.</p>
+      </Modal>
+    </>
+  )
+}
+```
+
+## With Title and Description
+
+<ModalWithTitleDemo />
+
+```tsx
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="Delete Account"
+  description="This action cannot be undone."
+>
+  <p>Are you sure you want to delete your account?</p>
+</Modal>
+```
+
+## With Footer Actions
+
+<ModalWithFooterDemo />
+
+```tsx
+<Modal
+  isOpen={isOpen}
+  onClose={() => setIsOpen(false)}
+  title="Confirm Action"
+  footer={
+    <>
+      <Button variant="secondary" onClick={() => setIsOpen(false)}>
+        Cancel
+      </Button>
+      <Button variant="danger" onClick={() => setIsOpen(false)}>
+        Delete
+      </Button>
+    </>
+  }
+>
+  <p>Are you sure you want to proceed?</p>
+</Modal>
+```
+
+## Sizes
+
+<ModalSizesDemo />
+
+```tsx
+<Modal size="sm" isOpen={isOpen} onClose={() => setIsOpen(false)}>
+  Small modal
+</Modal>
+```
+
+## API
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `isOpen` | `boolean` | - | Whether modal is open |
+| `onClose` | `() => void` | - | Close handler |
+| `title` | `string` | - | Modal title |
+| `description` | `string` | - | Modal description |
+| `size` | `'sm' \| 'md' \| 'lg' \| 'xl'` | `'md'` | Modal size |
+| `showCloseButton` | `boolean` | `true` | Whether to show close button |
+| `footer` | `ReactNode` | - | Footer content |
+| `children` | `ReactNode` | - | Modal body content |
+
+// Demo components
+function ModalDemo() {
+  const [isOpen, setIsOpen] = useState(false)
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)}>
+        <p>This is a modal dialog.</p>
+      </Modal>
+    </>
+  )
+}
+
+function ModalWithTitleDemo() {
+  const [isOpen, setIsOpen] = useState(false)
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Delete Account"
+        description="This action cannot be undone."
+      >
+        <p>Are you sure you want to delete your account?</p>
+      </Modal>
+    </>
+  )
+}
+
+function ModalWithFooterDemo() {
+  const [isOpen, setIsOpen] = useState(false)
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)}>Open Modal</Button>
+      <Modal
+        isOpen={isOpen}
+        onClose={() => setIsOpen(false)}
+        title="Confirm Action"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setIsOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="danger" onClick={() => setIsOpen(false)}>
+              Delete
+            </Button>
+          </>
+        }
+      >
+        <p>Are you sure you want to proceed?</p>
+      </Modal>
+    </>
+  )
+}
+
+function ModalSizesDemo() {
+  const [size, setSize] = useState('md')
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <>
+      <Button onClick={() => setIsOpen(true)} size="sm">
+        Small
+      </Button>{' '}
+      <Button onClick={() => setIsOpen(true)} size="md">
+        Medium
+      </Button>{' '}
+      <Button onClick={() => setIsOpen(true)} size="lg">
+        Large
+      </Button>
+      <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} size={size}>
+        <p>This is a {size} modal.</p>
+      </Modal>
+    </>
+  )
+}

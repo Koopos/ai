@@ -1,0 +1,120 @@
+import { Select } from '@ui-library/ui'
+
+# Select
+
+Dropdown select component for choosing from a list of options.
+
+## Basic Usage
+
+<Select
+  label="Choose an option"
+  options={[
+    { value: '1', label: 'Option 1' },
+    { value: '2', label: 'Option 2' },
+    { value: '3', label: 'Option 3' },
+  ]}
+/>
+
+```tsx
+<Select
+  label="Choose an option"
+  options={[
+    { value: '1', label: 'Option 1' },
+    { value: '2', label: 'Option 2' },
+    { value: '3', label: 'Option 3' },
+  ]}
+/>
+```
+
+## With Placeholder
+
+<Select
+  label="Select a country"
+  placeholder="Choose a country..."
+  options={[
+    { value: 'us', label: 'United States' },
+    { value: 'uk', label: 'United Kingdom' },
+    { value: 'ca', label: 'Canada' },
+  ]}
+/>
+
+```tsx
+<Select
+  label="Select a country"
+  placeholder="Choose a country..."
+  options={[
+    { value: 'us', label: 'United States' },
+    { value: 'uk', label: 'United Kingdom' },
+    { value: 'ca', label: 'Canada' },
+  ]}
+/>
+```
+
+## With Error State
+
+<Select
+  label="Select a plan"
+  error="Please select a plan"
+  options={[
+    { value: 'free', label: 'Free Plan' },
+    { value: 'pro', label: 'Pro Plan' },
+    { value: 'enterprise', label: 'Enterprise Plan' },
+  ]}
+/>
+
+```tsx
+<Select
+  label="Select a plan"
+  error="Please select a plan"
+  options={[
+    { value: 'free', label: 'Free Plan' },
+    { value: 'pro', label: 'Pro Plan' },
+    { value: 'enterprise', label: 'Enterprise Plan' },
+  ]}
+/>
+```
+
+## With Disabled Options
+
+<Select
+  label="Select a size"
+  options={[
+    { value: 's', label: 'Small' },
+    { value: 'm', label: 'Medium' },
+    { value: 'l', label: 'Large', disabled: true },
+    { value: 'xl', label: 'Extra Large', disabled: true },
+  ]}
+/>
+
+```tsx
+<Select
+  label="Select a size"
+  options={[
+    { value: 's', label: 'Small' },
+    { value: 'm', label: 'Medium' },
+    { value: 'l', label: 'Large', disabled: true },
+    { value: 'xl', label: 'Extra Large', disabled: true },
+  ]}
+/>
+```
+
+## API
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `label` | `string` | - | Select label |
+| `options` | `SelectOption[]` | - | Array of options |
+| `placeholder` | `string` | - | Placeholder text |
+| `error` | `string` | - | Error message to display |
+| `helperText` | `string` | - | Helper text to display below select |
+| `required` | `boolean` | `false` | Whether field is required |
+| `fullWidth` | `boolean` | `false` | Whether select takes full width |
+| `disabled` | `boolean` | `false` | Whether select is disabled |
+
+### SelectOption
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `value` | `string` | - | Option value |
+| `label` | `string` | - | Option label |
+| `disabled` | `boolean` | `false` | Whether option is disabled |
